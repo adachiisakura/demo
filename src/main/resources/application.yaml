@@ -1,0 +1,37 @@
+spring:
+  datasource:
+    username: root
+    password: goutianshou135
+    url: jdbc:mysql://localhost:3306/demo
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  mail:
+    # 发送者邮箱
+    username: 398239073@qq.com
+    #申请到的授权码
+    password: fzdiwrpfyccxbgcd
+    # 配置 SMTP 服务器地址
+    host: smtp.qq.com
+    # 端口号465或587
+    port: 465
+    protocol: smtps
+    # 默认的邮件编码为UTF-8
+    default-encoding: UTF-8
+    # 配置SSL 加密工厂
+    properties:
+      mail:
+        smtp:
+          socketFactoryClass: javax.net.ssl.SSLSocketFactory
+          #表示开启 DEBUG 模式，这样，邮件发送过程的日志会在控制台打印出来，方便排查错误
+          debug: true
+          ssl: true
+  data:
+    redis:
+      host: 38.207.176.149
+      port: 6379
+mybatis-plus:
+  mapper-locations: classpath/mapper/*
+  configuration:
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+jwt:
+  key: CSmmJ+85O+YUPJsWc8BC1SP4Gf8aPEMpT41d9zgdyR0=
+  ttl: 648000
