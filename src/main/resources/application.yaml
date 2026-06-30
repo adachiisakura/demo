@@ -37,8 +37,8 @@ jwt:
   ttl: 648000
 
 oss:
-  endpoint: https://your-bucket.oss-cn-region.aliyuncs.com
-  bucket: your-bucket
-  access-key-id: your-access-key-id
-  access-key-secret: your-access-key-secret
+  region: ap-guangzhou
+  bucket: your-bucket-1250000000
+  secret-id: your-secret-id-here
+  secret-key: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
   key-prefix: avatars/

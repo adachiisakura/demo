@@ -8,9 +8,14 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "oss")
 public class OssProperties {
-    private String endpoint;
+    /** 地域，如 ap-guangzhou */
+    private String region;
+    /** 存储桶名，如 example-1250000000 */
     private String bucket;
-    private String accessKeyId;
-    private String accessKeySecret;
+    /** SecretId */
+    private String secretId;
+    /** SecretKey */
+    private String secretKey;
+    /** 上传目录前缀 */
     private String keyPrefix = "avatars/";
 }
