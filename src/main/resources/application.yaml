@@ -35,3 +35,10 @@ mybatis-plus:
 jwt:
   key: CSmmJ+85O+YUPJsWc8BC1SP4Gf8aPEMpT41d9zgdyR0=
   ttl: 648000
+
+oss:
+  endpoint: https://your-bucket.oss-cn-region.aliyuncs.com
+  bucket: your-bucket
+  access-key-id: your-access-key-id
+  access-key-secret: your-access-key-secret
+  key-prefix: avatars/
