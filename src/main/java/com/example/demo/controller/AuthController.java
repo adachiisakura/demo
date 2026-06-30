@@ -13,7 +13,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.types.Expiration;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -78,6 +77,7 @@ public class AuthController {
         return Result.success("用户登录成功",token);
     }
 
+    //用户邮箱登录
     @PostMapping("/login/mail")
     public Result<String> userLoginWithMail(@RequestBody MailRegisterDto mailRegisterDto){
         log.info("处理{}的登录",mailRegisterDto.getMail());
@@ -85,7 +85,7 @@ public class AuthController {
         return Result.success("用户登录成功",token);
     }
 
-    //TODO 用户登出 把token加入redis黑名单,当token过期时删除
+    // 用户登出 删掉redis里的token
     @PostMapping("/logout")
     public Result<?> userLogout(@RequestHeader("auth") String token){
         System.out.println(token);

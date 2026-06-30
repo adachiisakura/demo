@@ -2,7 +2,6 @@ package com.example.demo.service;
 
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.example.demo.domain.dto.MailRegisterDto;
 import com.example.demo.domain.entity.User;
 import com.example.demo.exception.UserLoginException;
 
@@ -17,6 +16,10 @@ public interface UserService extends IService<User> {
     String userLoginWithMail(String mail,String vertify_code);
 
     void logout(String token);
+
+    User queryUser(Long currentId);
+
+    void updateUser(Long currentId,User user);
     //用户修改
 
     //用户删除

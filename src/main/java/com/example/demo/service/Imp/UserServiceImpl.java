@@ -1,9 +1,9 @@
 package com.example.demo.service.Imp;
 
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.example.demo.domain.dto.MailRegisterDto;
-import com.example.demo.domain.entity.Result;
 import com.example.demo.domain.entity.User;
 import com.example.demo.exception.BusinessException;
 import com.example.demo.exception.UserLoginException;
@@ -14,16 +14,13 @@ import com.example.demo.utilis.JwtUtili;
 import lombok.RequiredArgsConstructor;
 import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -53,7 +50,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper,User> implements Use
         }
         boolean login_flag=BCrypt.checkpw(String.valueOf(password),user.getPassword());
         if (login_flag){
-            return JwtUtili.create_token(user.getAccount(),jwtProperties.getKey(),jwtProperties.getTtl());
+            String token = JwtUtili.create_token(user.getAccount(), jwtProperties.getKey(), jwtProperties.getTtl());
+            redisTemplate.opsForValue().set("USER_TOKEN_KEY:"+token,"1",Duration.ofMinutes(5));
+            //存入用户token池
+            String userTokenSetKey = "USER_TOKENS:" + user.getAccount();
+            redisTemplate.opsForSet().add(userTokenSetKey, token);
+            return token;
         }
         else {
             throw new UserLoginException("账户密码不一致");
@@ -92,7 +94,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper,User> implements Use
 
     @Override
     public String userLoginWithMail(String mail,String vertify_code) {
-        HashMap<String, Object> stringObjectHashMap = new HashMap<>();
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper();
         queryWrapper.eq(User::getMail,mail);
         List<User> users = userMapper.selectList(queryWrapper);
@@ -101,7 +102,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper,User> implements Use
         }
         String login_code =redisTemplate.opsForValue().get("login:" + mail).toString();
         if (login_code.equals(vertify_code)){
-            return JwtUtili.create_token(users.get(0).getAccount(),jwtProperties.getKey(),jwtProperties.getTtl());
+            String token = JwtUtili.create_token(users.get(0).getAccount(), jwtProperties.getKey(), jwtProperties.getTtl());
+            redisTemplate.opsForValue().set("USER_TOKEN_KEY:"+users.get(0).getAccount()+":"+token,Duration.ofMinutes(5));
+            //存入用户token池
+            String userTokenSetKey = "USER_TOKENS:" + users.get(0).getAccount();
+            redisTemplate.opsForSet().add(userTokenSetKey, token);
+            return token;
         }
         else {
             throw new BusinessException("登录失败");
@@ -112,18 +118,29 @@ public class UserServiceImpl extends ServiceImpl<UserMapper,User> implements Use
     public void logout(String token) {
         // 获取Token在Redis中的Key
         String tokenKey = "USER_TOKEN_KEY:" + token;
-
         //查询这个Key的剩余过期时间
         Long ttl = redisTemplate.getExpire(tokenKey, TimeUnit.SECONDS);
+        String blacklistKey = "token:blacklist:" + token;
+        if (ttl != null && ttl > 0){redisTemplate.opsForValue().set(blacklistKey,token,Duration.ofSeconds(ttl));}
 
         // 3. 删除指定Token
         Boolean deleted = redisTemplate.delete(tokenKey);
+    }
 
-        if (Boolean.TRUE.equals(deleted) && ttl != null && ttl > 0) {
-            // 4. 将Token加入黑名单，过期时间设为刚才查询到的TTL
-            String blacklistKey = "token:blacklist:" + token;
-            redisTemplate.opsForValue().set(blacklistKey, "1", ttl, TimeUnit.SECONDS);
-            // 这里存"1"只是占位符，表示在黑名单中
-        }
+    @Override
+    public User queryUser(Long currentId) {
+        return userMapper.selectById(currentId);
+    }
+
+    @Override
+    public void updateUser(Long currentId,User user) {
+        System.out.println(user);
+        LambdaUpdateWrapper<User> updateWrapper = new LambdaUpdateWrapper<>();
+        if(user.getUsername()!=null){updateWrapper.set(User::getUsername,user.getUsername());}
+        if (user.getMail()!=null){updateWrapper.set(User::getMail,user.getMail());}
+        if (user.getSign()!=null){updateWrapper.set(User::getSign,user.getSign());}
+        if (user.getFace()!=null){updateWrapper.set(User::getFace,user.getFace());}
+        updateWrapper.eq(User::getAccount,currentId);
+        userMapper.update(user,updateWrapper);
     }
 }

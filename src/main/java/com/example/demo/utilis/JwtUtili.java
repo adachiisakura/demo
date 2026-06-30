@@ -1,20 +1,16 @@
 package com.example.demo.utilis;
 
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import com.example.demo.properties.JwtProperties;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Map;
 
 
 @RequiredArgsConstructor
@@ -32,5 +28,16 @@ public class JwtUtili {
                 .setClaims(claim)
                 .setExpiration(new Date(System.currentTimeMillis()+ ttl))
                 .compact();
+    }
+
+    public static Claims parse_token(String key, String token) {
+        // 将字符串密钥转换为 SecretKey
+        SecretKey secretKey = Keys.hmacShaKeyFor(key.getBytes(StandardCharsets.UTF_8));
+
+        return Jwts.parser()
+                .verifyWith(secretKey)  // 传入 SecretKey 对象
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 }
