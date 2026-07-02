@@ -58,4 +58,14 @@ public class CosUtili {
         // 创建文件的网络访问路径
         return key;
     }
+
+    public void deleteObject(String key) {
+        COSCredentials cred = new BasicCOSCredentials(secretId, secretKey);
+        Region region = new Region(this.region);
+        ClientConfig clientConfig = new ClientConfig(region);
+        clientConfig.setHttpProtocol(HttpProtocol.https);
+        COSClient cosClient = new COSClient(cred, clientConfig);
+        cosClient.deleteObject(bucketname, key);
+        cosClient.shutdown();
+    }
 }
