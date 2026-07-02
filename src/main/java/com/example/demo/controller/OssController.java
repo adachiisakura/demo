@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 
 import com.example.demo.domain.entity.Result;
+import com.example.demo.properties.CosProperties;
 import com.example.demo.utilis.CosUtili;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,15 +18,17 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class OssController {
     private final CosUtili cosUtili;
+    private final CosProperties cosProperties;
 
     @PostMapping("")
-    public Result<?> uploadFile(MultipartFile file){
+    public Result<String> uploadFile(MultipartFile file) {
         try {
-            String string = cosUtili.upload(file);
-            System.out.println(string);
+            String key = cosUtili.upload(file);
+            String url = "https://" + cosProperties.getBucketname() + ".cos."
+                    + cosProperties.getRegion() + ".myqcloud.com/" + key;
+            return Result.success("上传成功", url);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            return Result.error("上传失败: " + e.getMessage());
         }
-        return Result.success("上传成功");
     }
 }
